@@ -1,4 +1,4 @@
-# ImyvmAnnouceLite
+# ImyvmAnnounceLite
 
 一个轻量级 Minecraft Fabric 服务器端 Mod，用于定时广播 MOTD（消息）。
 
