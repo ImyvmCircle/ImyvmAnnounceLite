@@ -10,11 +10,12 @@ import com.imyvm.ial.util.MsgCommandResponds
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
-import net.minecraft.command.CommandRegistryAccess
-import net.minecraft.server.command.CommandManager.*
-import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.commands.CommandBuildContext
+import net.minecraft.commands.Commands
+import net.minecraft.commands.Commands.*
+import net.minecraft.commands.CommandSourceStack
 
-fun register(dispatcher: CommandDispatcher<ServerCommandSource>, registryAccess: CommandRegistryAccess) {
+fun register(dispatcher: CommandDispatcher<CommandSourceStack>, registryAccess: CommandBuildContext) {
     dispatcher.register(
         literal("imyvm-motd")
             .then(
@@ -23,7 +24,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, registryAccess:
             )
             .then(
                 literal("add")
-                    .requires { it.hasPermissionLevel(2) }
+                    .requires { Commands.LEVEL_GAMEMASTERS.check(it.permissions()) }
                     .then(
                         argument("message", StringArgumentType.greedyString())
                             .executes { addMotd(it) }
@@ -31,7 +32,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, registryAccess:
             )
             .then(
                 literal("remove")
-                    .requires { it.hasPermissionLevel(2) }
+                    .requires { Commands.LEVEL_GAMEMASTERS.check(it.permissions()) }
                     .then(
                         argument("index", StringArgumentType.word())
                             .executes { removeMotd(it) }
@@ -39,12 +40,12 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, registryAccess:
             )
             .then(
                 literal("reload")
-                    .requires { it.hasPermissionLevel(2) }
+                    .requires { Commands.LEVEL_GAMEMASTERS.check(it.permissions()) }
                     .executes { reloadMotd(it) }
             )
             .then(
                 literal("timeset")
-                    .requires{ it.hasPermissionLevel(2) }
+                    .requires{ Commands.LEVEL_GAMEMASTERS.check(it.permissions()) }
                     .then(
                         argument("interval", StringArgumentType.word())
                             .executes { setTimeInterval(it) }
@@ -66,7 +67,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, registryAccess:
             )
             .then(
                 literal("reset")
-                    .requires { it.hasPermissionLevel(2) }
+                    .requires { Commands.LEVEL_GAMEMASTERS.check(it.permissions()) }
                     .executes { ctx ->
                         resetConfig(ctx)
                     }
@@ -75,7 +76,7 @@ fun register(dispatcher: CommandDispatcher<ServerCommandSource>, registryAccess:
 }
 
 
-private fun listMotds(ctx: CommandContext<ServerCommandSource>): Int {
+private fun listMotds(ctx: CommandContext<CommandSourceStack>): Int {
     val motds = MOTD_LIST.value
     if (motds.isEmpty()) {
         MsgCommandResponds.sendInfo(ctx.source, "motd.empty")
@@ -88,7 +89,7 @@ private fun listMotds(ctx: CommandContext<ServerCommandSource>): Int {
     return 1
 }
 
-private fun addMotd(ctx: CommandContext<ServerCommandSource>): Int {
+private fun addMotd(ctx: CommandContext<CommandSourceStack>): Int {
     val newMsg = StringArgumentType.getString(ctx, "message")
 
     return updateMotd(ctx) { list ->
@@ -98,7 +99,7 @@ private fun addMotd(ctx: CommandContext<ServerCommandSource>): Int {
     }
 }
 
-private fun removeMotd(ctx: CommandContext<ServerCommandSource>): Int {
+private fun removeMotd(ctx: CommandContext<CommandSourceStack>): Int {
     val indexStr = StringArgumentType.getString(ctx, "index")
     val index = indexStr.toIntOrNull()
 
@@ -113,7 +114,7 @@ private fun removeMotd(ctx: CommandContext<ServerCommandSource>): Int {
     }
 }
 
-private fun reloadMotd(ctx: CommandContext<ServerCommandSource>): Int {
+private fun reloadMotd(ctx: CommandContext<CommandSourceStack>): Int {
     CONFIG.loadAndSave()
     ImyvmAnnounceLite.broadcastScheduler.restart(
         ctx.source.server,
@@ -124,7 +125,7 @@ private fun reloadMotd(ctx: CommandContext<ServerCommandSource>): Int {
     return 1
 }
 
-private inline fun updateMotd(ctx: CommandContext<ServerCommandSource>, modifier: (MutableList<String>) -> Boolean): Int {
+private inline fun updateMotd(ctx: CommandContext<CommandSourceStack>, modifier: (MutableList<String>) -> Boolean): Int {
     val list = MOTD_LIST.value.toMutableList()
     val changed = modifier(list)
     if (changed) {
@@ -144,7 +145,7 @@ private inline fun updateMotd(ctx: CommandContext<ServerCommandSource>, modifier
     return 0
 }
 
-private fun setTimeInterval(ctx: CommandContext<ServerCommandSource>): Int {
+private fun setTimeInterval(ctx: CommandContext<CommandSourceStack>): Int {
     val newInterval = StringArgumentType.getString(ctx, "interval").toLongOrNull()
     if (newInterval == null || newInterval <= 0) {
         MsgCommandResponds.sendError(ctx.source, "motd.invalid_interval")
@@ -164,7 +165,7 @@ private fun setTimeInterval(ctx: CommandContext<ServerCommandSource>): Int {
     return 1
 }
 
-private fun resetConfig(ctx: CommandContext<ServerCommandSource>): Int {
+private fun resetConfig(ctx: CommandContext<CommandSourceStack>): Int {
     MOTD_LIST.setValue(listOf(
         "&a服务器娘喵了一下～",
         "&c请遵守服务器规则，祝您游戏愉快！"

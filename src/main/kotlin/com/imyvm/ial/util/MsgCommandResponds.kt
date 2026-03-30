@@ -1,7 +1,7 @@
 package com.imyvm.ial.util
 
-import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.text.Text
+import net.minecraft.commands.CommandSourceStack
+import net.minecraft.network.chat.Component
 
 object MsgCommandResponds {
     private val messages: Map<String, String> = mapOf(
@@ -25,20 +25,20 @@ object MsgCommandResponds {
         "motd.reset" to "§a公告已重置为默认配置。"
     )
 
-    fun sendInfo(source: ServerCommandSource, key: String, placeholders: Map<String, String> = emptyMap()) {
-        source.sendMessage(Text.literal("§7[IMYVM-MOTD] " + format(key, placeholders)))
+    fun sendInfo(source: CommandSourceStack, key: String, placeholders: Map<String, String> = emptyMap()) {
+        source.sendSystemMessage(Component.literal("§7[IMYVM-MOTD] " + format(key, placeholders)))
     }
 
-    fun sendError(source: ServerCommandSource, key: String, placeholders: Map<String, String> = emptyMap()) {
-        source.sendMessage(Text.literal("§c[错误] " + format(key, placeholders)))
+    fun sendError(source: CommandSourceStack, key: String, placeholders: Map<String, String> = emptyMap()) {
+        source.sendSystemMessage(Component.literal("§c[错误] " + format(key, placeholders)))
     }
 
-    fun sendSuccess(source: ServerCommandSource, key: String, placeholders: Map<String, String> = emptyMap()) {
-        source.sendMessage(Text.literal("§a[成功] " + format(key, placeholders)))
+    fun sendSuccess(source: CommandSourceStack, key: String, placeholders: Map<String, String> = emptyMap()) {
+        source.sendSystemMessage(Component.literal("§a[成功] " + format(key, placeholders)))
     }
 
-    fun sendMotdEntry(source: ServerCommandSource, index: Int, content: String) {
-        source.sendMessage(Text.literal("§7[$index] §r$content"))
+    fun sendMotdEntry(source: CommandSourceStack, index: Int, content: String) {
+        source.sendSystemMessage(Component.literal("§7[$index] §r$content"))
     }
 
     private fun format(key: String, placeholders: Map<String, String>): String {

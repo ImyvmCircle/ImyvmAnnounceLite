@@ -45,7 +45,7 @@ class BroadcastScheduler {
         currentIndex = (currentIndex + 1) % motdList.size
 
         val message = TextParser.parseWithPrefix(messageText)
-        s.playerManager.broadcast(message, false)
+        s.getPlayerList().broadcastSystemMessage(message, false)
     }
 }
 
