@@ -1,4 +1,4 @@
-name: Publish package to GitHub Packages
+name: publish
 
 on:
   push:
@@ -11,7 +11,6 @@ jobs:
 
     permissions:
       contents: write
-      packages: write
 
     steps:
       - name: checkout repository
@@ -31,14 +30,6 @@ jobs:
         env:
           GITHUB_USERNAME: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: publish package
-        run: ./gradlew publish
-        env:
-          GITHUB_USERNAME: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
-          S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
 
       - name: publish release
         uses: softprops/action-gh-release@v2
